@@ -1,19 +1,19 @@
-import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, useTheme } from '@mui/material';
+import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, Tooltip, useTheme } from '@mui/material';
 import React from 'react';
-import {  ControlsCommandTypes, ControlsValveTypes, IControlsPacket, PacketType } from '../../../../lib/monitoring-system-types';
+import { ControlsValveTypes } from '../../../../lib/monitoring-system-types';
 import ValveControl from '../../../controls/valve-control/ValveControl';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { DEFAULT_CONTROLS_CONFIG } from '../../../../lib/configs/configs';
+
 
 const ControlsPanelDock: React.FC = () => {
+    enum ConnectionDotColors {
+        CONNECTED = 'success',
+        INTERRUPTED = 'error',
+        DISCONNECTED = 'default'
+    }
+
     const theme = useTheme();
-    const valves = [
-        ControlsValveTypes.N2OFlow,
-        ControlsValveTypes.N2OVent,
-        ControlsValveTypes.N2Flow,
-        ControlsValveTypes.ERV,
-        ControlsValveTypes.RTV,
-        ControlsValveTypes.NCV,
-        ControlsValveTypes.MEV
-    ];
     return (
         <Paper
             elevation={2}
@@ -28,10 +28,12 @@ const ControlsPanelDock: React.FC = () => {
                     minWidth={'100%'}
                     direction={'row'} 
                     justifyContent={'space-between'}
-
                 >
-                    {valves.map((valve) => (
-                        <ValveControl valveName={valve} />
+                    {DEFAULT_CONTROLS_CONFIG.map((control, index) => (
+                        <ValveControl
+                            key={index}
+                            valveName={control}
+                        />
                     ))}
                 </Stack>
             </FormControl>
@@ -47,18 +49,40 @@ const ControlsPanelDock: React.FC = () => {
                     Abort
                 </Button>
                 <ButtonGroup orientation='horizontal'>
-                    <Button 
+                    <LoadingButton 
                         color='inherit'
-                        startIcon={<Chip size='small' color='success' sx={{ borderRadius: '50%', width: 25 }}/>}
+                        variant='contained'
+                        // loading={true}
+                        loadingPosition='start'
+                        startIcon={
+                            <Tooltip title='Controls Status'>
+                                <Chip 
+                                    size='small' 
+                                    color={ConnectionDotColors.CONNECTED} 
+                                    sx={{ borderRadius: '50%', width: 25 }}
+                                />
+                            </Tooltip>
+                        }
                     >
                         Controls
-                    </Button>
-                    <Button 
+                    </LoadingButton>
+                    <LoadingButton 
                         color='inherit'
-                        startIcon={<Chip size='small' color='success' sx={{ borderRadius: '50%', width: 25 }}/>}
+                        variant='contained'
+                        // loading={true}
+                        loadingPosition='start'
+                        startIcon={
+                            <Tooltip title='Instrumentation Status'>
+                                <Chip 
+                                    size='small' 
+                                    color={ConnectionDotColors.INTERRUPTED}
+                                    sx={{ borderRadius: '50%', width: 25 }}
+                                />
+                            </Tooltip>
+                        }
                     >
                         Instrumentation
-                    </Button>
+                    </LoadingButton>
                 </ButtonGroup>
             </Stack>
         </Paper>

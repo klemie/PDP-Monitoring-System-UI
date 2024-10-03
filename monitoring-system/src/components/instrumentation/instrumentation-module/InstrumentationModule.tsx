@@ -9,11 +9,12 @@ type InstrumentationModuleProps = {
     type?: InstrumentationType;
     reading?: number;
     phone?: boolean;
+    defaultView?: 'graph' | 'value' | 'both';
 }
 
 export const InstrumentationModule = (props: InstrumentationModuleProps) => {
-    const { title, type, reading, phone } = props;
-    const [moduleVisualizationType, setModuleVisualizationType] = useState('graph');
+    const { title, type, reading, phone, defaultView } = props;
+    const [moduleVisualizationType, setModuleVisualizationType] = useState(defaultView || 'value');
 
     return (
         <Paper
@@ -44,6 +45,7 @@ InstrumentationModule.Header = (props: {
     title: string, 
     label: string, 
     color: string,
+    type?: InstrumentationType,
     setModuleVisualizationType: (type: string) => void,
     moduleVisualizationType: string
 }) => {

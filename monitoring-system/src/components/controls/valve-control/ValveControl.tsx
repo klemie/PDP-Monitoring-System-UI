@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ControlsActionTypes, ControlsCommandTypes, ControlsValveTypes, IControlsPacket, PacketType } from '../../../lib/monitoring-system-types';
-import { Chip, FormControlLabel, Stack, Switch, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Chip, FormControlLabel, Stack, Switch, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 interface IValveControlProps {
     valveName: ControlsValveTypes;
@@ -58,18 +58,19 @@ const ValveControl = (props: IValveControlProps) => {
 
     return (
         <>
-            {!isNotMobile ? <ValveControl.PhoneView /> : <ValveControl.ComputerView />}
+            {!isNotMobile ? <ValveControl.PhoneView valveName={valveName} /> : <ValveControl.ComputerView valveName={valveName} />}
         </>
     );
 } 
 
-ValveControl.ComputerView = () => {
+ValveControl.ComputerView = (props: { valveName: string }) => {
+    const { valveName } = props;
     return (
         <Stack direction="column" spacing={0} alignItems={'center'} minWidth={140} marginY={0.5}>
             <FormControlLabel 
                 sx={{ width: "fit-content" }} 
                 control={<Switch />} 
-                label={<Typography variant='button'>Valve</Typography>} 
+                label={<Typography variant='button'>{valveName}</Typography>} 
                 labelPlacement='end' 
             />
             <Chip 
@@ -82,10 +83,11 @@ ValveControl.ComputerView = () => {
     );
 }
 
-ValveControl.PhoneView = () => {
+ValveControl.PhoneView = (props: { valveName: string }) => {
+    const { valveName } = props;
     return (
         <Stack direction="column" spacing={0} alignItems={'center'} minWidth={140} marginY={0.5}>
-            <Typography>Valve</Typography>
+            <Typography>{valveName}</Typography>
             <Chip 
                 color="default"
                 size="small" 
