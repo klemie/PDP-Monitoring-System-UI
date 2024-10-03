@@ -69,6 +69,35 @@ export const DEFAULT_INSTRUMENTATION_CONFIG: InstrumentationSensorType[]  = [
     }
 ]
 
+// TODO: Update to match the actual configuration
+export const CONTROL_VALVES_SAFE_STATES = [
+    {
+        valve: ControlsValveTypes.N2OVent,
+        state: 'CLOSED'
+    },
+    {
+        valve: ControlsValveTypes.N2Flow,
+        state: 'CLOSED'
+    },
+    {
+        valve: ControlsValveTypes.ERV,
+        state: 'CLOSED'
+    },
+    {
+        valve: ControlsValveTypes.RTV,
+        state: 'CLOSED'
+    },
+    {
+        valve: ControlsValveTypes.NCV,
+        state: 'CLOSED'
+    },
+    {
+        valve: ControlsValveTypes.MEV,
+        state: 'CLOSED'
+    }
+]
+
+
 export const DEFAULT_CONTROLS_CONFIG = [
     ControlsValveTypes.N2OVent,
     ControlsValveTypes.N2Flow,
