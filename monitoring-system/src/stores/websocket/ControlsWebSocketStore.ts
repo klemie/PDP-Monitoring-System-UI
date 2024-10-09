@@ -2,8 +2,8 @@ import { makeAutoObservable, onBecomeObserved, onBecomeUnobserved } from "mobx";
 import AutoObservable from "./AutoObserable";
 import LocalStorageCache from "../../lib/cashe";
 import { DEFAULT_CONTROLS_CONFIG, CONTROL_VALVES_SAFE_STATES } from "../../lib/configs/configs";
-import useWebSocket from 'react-use-websocket';
 import { WebSocketHook } from "react-use-websocket/dist/lib/types";
+import WebSocket from 'ws';
 
 const VALVE_NAME_KEYS = DEFAULT_CONTROLS_CONFIG
 const VALVE_DEFAULT_STATES = CONTROL_VALVES_SAFE_STATES
@@ -32,40 +32,40 @@ export class ControlsWebSocketStore implements IControlsStore {
   logCache: LocalStorageCache<string[]> = new LocalStorageCache<string[]>('ControlsLogCache');
   isConnected: boolean = false;
   connected: boolean = false;
-  private ws: WebSocketHook | null = null;
+  private ws: typeof WebSocket | null = null;
   
   constructor() {
     onBecomeObserved(this, 'isConnected', this.connect);
     onBecomeUnobserved(this, 'isConnected', this.disconnect);
     makeAutoObservable(this);
+    this.ws = new WebSocket(WSS_URL, {
+      // options
+    });
   }
 
   connect() {
     // connect to the websocket
-    this.ws = useWebSocket(WSS_URL, {
-      onOpen: this.onOpen,
-      onClose: this.onClose,
-      onError: this.onError,
-      onMessage: this.onMessage,
-      share: true
-    })
+    this.ws.on('open', () => {
+      this.onOpen();
+    });
   }
 
   disconnect(): void {
     // disconnect from the websocket
-    this.ws?.getWebSocket()?.close()
-  }
-
-  private onOpen() {
-    this.isConnected = true;
+    this.ws.on('close', () => {
+      this.onClose();
+    });
   }
 
   private onClose() {
     this.isConnected = false;
   }
 
-  private onError() {
-    this.isConnected = false;
+  private onOpen() {
+    this.isConnected = true;
+    this.ws.on('message', (message) => {
+      this.onMessage(message);
+    });
   }
 
   private onMessage(message: MessageEvent) {

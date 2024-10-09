@@ -20,6 +20,7 @@
     "@mui/material": "^6.1.1",
     "@mui/styled-engine-sc": "^6.1.1",
     "@toolpad/core": "^0.7.0",
+    "json-edit-react": "^1.17.0",
     "mobx": "^6.13.3",
     "mobx-react": "^9.1.1",
     "mobx-react-lite": "^4.0.7",
@@ -59,5 +60,8 @@
     "extends": [
       "plugin:storybook/recommended"
     ]
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
   }
 }

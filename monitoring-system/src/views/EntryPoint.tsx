@@ -1,86 +1,69 @@
-import { AppBar, Button, Container, Grid2, IconButton, Menu, MenuItem, Stack } from '@mui/material';
+import { AppBar, Button, IconButton, Menu, MenuItem, Select } from '@mui/material';
 import { PageContainer, PageContainerToolbar } from '@toolpad/core';
-import { Download, Settings } from '@mui/icons-material';
+import { Chat, Download, Settings } from '@mui/icons-material';
 import ControlsPanelDock from '../components/base/panels/controls-panel/ControlsPanelDock';
-import React, { useState, MouseEvent } from 'react';
+import { useContext } from 'react';
 import { InstrumentationPanel } from '../components/base/panels/instrumentation-panel/InstrumentataionPanel';
+import { SettingPanel } from '../components/base/panels/settings-panel/settings-panel';
+import { SettingStoreContext } from '../stores/SettingStore';
+import { useDemoRouter } from '@toolpad/core/internals';
+import { SegmentKeys } from '../stores/BaseStore';
+import { observer } from 'mobx-react-lite';
 
 
-export const EntryPoint = () => {
+
+export const EntryPoint = observer(() => {
+    const SettingStore = useContext(SettingStoreContext);
+
     return (
         <PageContainer 
-            slots={{ toolbar: EntryPoint.ToolBar }}
+            slots={{ toolbar: EntryPointToolBar }}
             sx={{
-                marginX: 0,
                 maxWidth: "100%",
                 minWidth: "100%",
+                maxHeight: "100vh",
+                overflowY: 'hidden',
+                paddingX: 10
             }}
         >
-            <InstrumentationPanel />
-            <AppBar 
-                position="fixed" 
-                color="primary" 
-                sx={{ top: 'auto', bottom: 0 }}
-            >
-                <ControlsPanelDock />
-            </AppBar>
+            <SettingStoreContext.Provider value={SettingStore}>
+                {SettingStore.currentView === 'SETTINGS' && <SettingPanel />}
+                { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.instrumentation.graphs && <InstrumentationPanel /> }
+                { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.controls.dock && <AppBar 
+                    position="fixed"
+                    color="primary" 
+                    sx={{ 
+                        top: 'auto', 
+                        bottom: 0,
+                    }}
+                >
+                    <ControlsPanelDock />
+                </AppBar> }
+                
+            </SettingStoreContext.Provider>
         </PageContainer>
     )
-};
+});
 
-EntryPoint.ToolBar = () => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+const EntryPointToolBar = observer(() => {
+
+    const SettingStore = useContext(SettingStoreContext);
     return (
         <PageContainerToolbar>
-             <Button startIcon={<Download />} color='inherit' disabled>
+            <Button startIcon={<Download />} color='inherit' disabled>
                 export
+            </Button>
+            <Button startIcon={<Chat />} color='inherit' disabled>
+                Logs
             </Button>
             <IconButton
                 id="basic-button"
-                aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
+                onClick={() => {
+                    SettingStore.updateView('SETTINGS')
+                }}
             >
                 <Settings  />
             </IconButton>
-            <EntryPoint.Menu 
-                anchorEl={anchorEl} 
-                open={open} 
-                handleClose={handleClose} 
-            />
         </PageContainerToolbar>
     )
-}
-
-type MenuProps = {
-    anchorEl: HTMLElement | null;
-    open: boolean;
-    handleClose: () => void;
-}
-
-EntryPoint.Menu = (props: MenuProps) => {
-    const { anchorEl, open, handleClose } = props;
-    return (
-        <Menu
-            id="basic-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-            'aria-labelledby': 'basic-button',
-            }}
-        >
-            <MenuItem onClick={handleClose}>Settings</MenuItem>
-            <MenuItem onClick={handleClose}>UI Configuration</MenuItem>
-            {/* <MenuItem onClick={handleClose}>Instrumentation</MenuItem> */}
-        </Menu>
-    )
-}
+})

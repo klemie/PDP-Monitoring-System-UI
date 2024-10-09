@@ -18,7 +18,7 @@ export type Packet = {
     readings: number;
 }
 
-export const TEMPERATURE_SENSOR_CONFIG: InstrumentationReadingType = {
+const TEMPERATURE_SENSOR_CONFIG: InstrumentationReadingType = {
     label: "T",
     color: "#D65B4F",
     threshold: 273, 
@@ -26,7 +26,7 @@ export const TEMPERATURE_SENSOR_CONFIG: InstrumentationReadingType = {
     unit: "K"
 }
 
-export const PRESSURE_SENSOR_CONFIG: InstrumentationReadingType = {
+const PRESSURE_SENSOR_CONFIG: InstrumentationReadingType = {
     label: "P",
     color: "#5DA5DA",
     threshold: 101325,
@@ -34,7 +34,7 @@ export const PRESSURE_SENSOR_CONFIG: InstrumentationReadingType = {
     unit: "Pa"
 }
 
-export const LOAD_SENSOR_CONFIG: InstrumentationReadingType = {
+const LOAD_SENSOR_CONFIG: InstrumentationReadingType = {
     label: "L",
     color: "#FAA43A",
     threshold: 5000,
@@ -42,10 +42,17 @@ export const LOAD_SENSOR_CONFIG: InstrumentationReadingType = {
     unit: "N"
 }
 
-export const MASS_SENSOR_CONFIG: InstrumentationReadingType = {
+const MASS_SENSOR_CONFIG: InstrumentationReadingType = {
     label: "M",
     color: "#60BD68",
     threshold: 0,
     max: 10,
     unit: "KG"
+}
+
+export const instrumentationModuleConfigMap = {
+    [InstrumentationType.TEMPERATURE]: TEMPERATURE_SENSOR_CONFIG,
+    [InstrumentationType.PRESSURE]: PRESSURE_SENSOR_CONFIG,
+    [InstrumentationType.LOAD]: LOAD_SENSOR_CONFIG,
+    [InstrumentationType.MASS]: MASS_SENSOR_CONFIG
 }

@@ -1,12 +1,12 @@
 import { Box, IconButton, ListItemIcon, Menu, MenuItem, Paper, Stack, Typography } from "@mui/material";
-import { InstrumentationType, TEMPERATURE_SENSOR_CONFIG } from "./Instrumentation-module-types";
+import { instrumentationModuleConfigMap, InstrumentationType } from "./Instrumentation-module-types";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Brush } from 'recharts';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, MoreVert } from "@mui/icons-material";
 
 type InstrumentationModuleProps = {
     title: string;
-    type?: InstrumentationType;
+    type: InstrumentationType;
     reading?: number;
     phone?: boolean;
     defaultView?: 'graph' | 'value' | 'both';
@@ -15,7 +15,11 @@ type InstrumentationModuleProps = {
 export const InstrumentationModule = (props: InstrumentationModuleProps) => {
     const { title, type, reading, phone, defaultView } = props;
     const [moduleVisualizationType, setModuleVisualizationType] = useState(defaultView || 'value');
-
+    
+    useEffect(() => {
+        console.log(type)
+     }, [type])
+    
     return (
         <Paper
             elevation={2}
@@ -28,14 +32,13 @@ export const InstrumentationModule = (props: InstrumentationModuleProps) => {
             <Stack spacing={1}>
                 <InstrumentationModule.Header 
                     title={title} 
-                    color={TEMPERATURE_SENSOR_CONFIG.color}
-                    label={TEMPERATURE_SENSOR_CONFIG.label}
+                    type={type}
                     setModuleVisualizationType={(type: string) => setModuleVisualizationType(type)}
                     moduleVisualizationType={moduleVisualizationType}
                 />
                 { moduleVisualizationType === 'graph' || moduleVisualizationType === 'both' ? <InstrumentationModule.Graph /> : null }
                 { moduleVisualizationType === 'both' ? <Box sx={{ height: 10 }} /> : null }
-                { moduleVisualizationType === 'value' || moduleVisualizationType === 'both' ? <InstrumentationModule.Value /> : null }
+                { moduleVisualizationType === 'value' || moduleVisualizationType === 'both' ? <InstrumentationModule.Value type={type} /> : null }
             </Stack>
         </Paper>
     )
@@ -43,22 +46,29 @@ export const InstrumentationModule = (props: InstrumentationModuleProps) => {
 
 InstrumentationModule.Header = (props: { 
     title: string, 
-    label: string, 
-    color: string,
-    type?: InstrumentationType,
+    type: InstrumentationType,
     setModuleVisualizationType: (type: string) => void,
     moduleVisualizationType: string
 }) => {
-    const { title, label, color, setModuleVisualizationType, moduleVisualizationType} = props;
+    const { title, type, setModuleVisualizationType, moduleVisualizationType} = props;
+ 
+
+    const typeColor = instrumentationModuleConfigMap[type].color;
+    const typeLabel = instrumentationModuleConfigMap[type].label;
+    // const 
+
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
+
     const handleClose = () => {
         setAnchorEl(null);
     };
+
     return (
         <Stack
             direction={'row'} 
@@ -81,7 +91,7 @@ InstrumentationModule.Header = (props: {
                 </IconButton>
                 <Box
                     sx={{ 
-                        backgroundColor: color,
+                        backgroundColor: typeColor,
                         color: 'white',
                         borderRadius: 1,
                         padding: 1,
@@ -98,7 +108,7 @@ InstrumentationModule.Header = (props: {
                         textAlign={'center'}
                         color="inherit"
                     >
-                        {label}
+                        {typeLabel}
                     </Typography>
                 </Box>
             </Stack>
@@ -171,43 +181,46 @@ InstrumentationModule.Graph = () => {
             width='100%' 
             height={200}
         >
-                <LineChart
-                    data={[{
-                        packetNumber: 0,
-                        reading: 0
-                    },
-                    {
-                        packetNumber: 1,
-                        reading: 1
-                    },
-                    {
-                        packetNumber: 2,
-                        reading: 2
-                    }]}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                >
-                    <Line 
-                        type="monotone" 
-                        dataKey="reading" 
-                        stroke={"#515356"}
-                        strokeWidth={3} 
-                        activeDot={{r: 5}}
-                        isAnimationActive={false}
-                    />
-                    <XAxis dataKey={'packetNumber'} />
-                    <YAxis />
-                    <Brush 
-                        height={15}
-                        fill='#22272E'
-                        stroke='#22272E'
-                    />
-                    <Tooltip />
-                </LineChart>
-            </ResponsiveContainer>
+            <LineChart
+                data={[{
+                    packetNumber: 0,
+                    reading: 0
+                },
+                {
+                    packetNumber: 1,
+                    reading: 1
+                },
+                {
+                    packetNumber: 2,
+                    reading: 2
+                }]}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
+                <Line 
+                    type="monotone" 
+                    dataKey="reading" 
+                    stroke={"#515356"}
+                    strokeWidth={3} 
+                    activeDot={{r: 5}}
+                    isAnimationActive={false}
+                />
+                <XAxis dataKey={'packetNumber'} />
+                <YAxis />
+                <Brush 
+                    height={15}
+                    fill='#22272E'
+                    stroke='#22272E'
+                />
+                <Tooltip />
+            </LineChart>
+        </ResponsiveContainer>
     )
 }
 
-InstrumentationModule.Value = () => {
+InstrumentationModule.Value = (
+    props: { type: InstrumentationType }
+) => {
+    const typeUnit = instrumentationModuleConfigMap[props.type].unit;
     return (
         <Box
             sx={{ 
@@ -219,7 +232,7 @@ InstrumentationModule.Value = () => {
         >
             <Stack justifyContent={'space-between'} direction={'row'} marginX={1}>
                 <Typography margin={0} sx={{ fontWeight: "bold" }}>{'—'}</Typography>
-                <Typography margin={0} sx={{ fontWeight: "bold" }}>{'K'}</Typography>
+                <Typography margin={0} sx={{ fontWeight: "bold" }}>{typeUnit}</Typography>
             </Stack>
         </Box>
     )

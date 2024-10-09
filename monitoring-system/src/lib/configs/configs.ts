@@ -1,13 +1,18 @@
 import { InstrumentationType } from "../../components/instrumentation/instrumentation-module/Instrumentation-module-types";
 import { ControlsValveTypes } from "../monitoring-system-types";
 
-type InstrumentationSensorType = {
+export type InstrumentationSensorType = {
     label: string;
     key: string;
     type: InstrumentationType;
     display: boolean;
     visualizationType?: 'graph' | 'value' | 'both';
     size: 9 | 3;
+}
+
+export type ControlValveType = {
+    valve: ControlsValveTypes.N2OVent | ControlsValveTypes.N2Flow | ControlsValveTypes.ERV | ControlsValveTypes.RTV | ControlsValveTypes.NCV | ControlsValveTypes.MEV;
+    state: 'CLOSED' | 'OPEN' | 'FILLING' | 'VENTING' | 'UNKNOWN';
 }
 
 export const DEFAULT_INSTRUMENTATION_CONFIG: InstrumentationSensorType[]  = [
@@ -70,7 +75,7 @@ export const DEFAULT_INSTRUMENTATION_CONFIG: InstrumentationSensorType[]  = [
 ]
 
 // TODO: Update to match the actual configuration
-export const CONTROL_VALVES_SAFE_STATES = [
+export const CONTROL_VALVES_SAFE_STATES: ControlValveType[] = [
     {
         valve: ControlsValveTypes.N2OVent,
         state: 'CLOSED'

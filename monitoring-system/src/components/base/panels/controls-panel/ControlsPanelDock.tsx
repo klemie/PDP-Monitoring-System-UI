@@ -1,24 +1,25 @@
-import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, Tooltip, useTheme } from '@mui/material';
-import React from 'react';
-import { ControlsValveTypes } from '../../../../lib/monitoring-system-types';
+import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, Tooltip } from '@mui/material';
+import React, { useContext } from 'react';
 import ValveControl from '../../../controls/valve-control/ValveControl';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { DEFAULT_CONTROLS_CONFIG } from '../../../../lib/configs/configs';
+import { observer } from 'mobx-react-lite';
+import { SettingStoreContext } from '../../../../stores/SettingStore';
 
 
-const ControlsPanelDock: React.FC = () => {
+const ControlsPanelDock: React.FC = observer(() => {
     enum ConnectionDotColors {
         CONNECTED = 'success',
         INTERRUPTED = 'error',
         DISCONNECTED = 'default'
     }
 
-    const theme = useTheme();
+    const settingStore = useContext(SettingStoreContext);
+
     return (
         <Paper
             elevation={2}
             sx={{ 
-                padding: 1, 
+                padding: 2, 
                 width: "100%", 
                 height: "fit-content",
             }}
@@ -29,7 +30,7 @@ const ControlsPanelDock: React.FC = () => {
                     direction={'row'} 
                     justifyContent={'space-between'}
                 >
-                    {DEFAULT_CONTROLS_CONFIG.map((control, index) => (
+                    {settingStore.controlsList.map((control, index) => (
                         <ValveControl
                             key={index}
                             valveName={control}
@@ -55,7 +56,7 @@ const ControlsPanelDock: React.FC = () => {
                         // loading={true}
                         loadingPosition='start'
                         startIcon={
-                            <Tooltip title='Controls Status'>
+                            <Tooltip title='Controls WebSocket Status'>
                                 <Chip 
                                     size='small' 
                                     color={ConnectionDotColors.CONNECTED} 
@@ -72,7 +73,7 @@ const ControlsPanelDock: React.FC = () => {
                         // loading={true}
                         loadingPosition='start'
                         startIcon={
-                            <Tooltip title='Instrumentation Status'>
+                            <Tooltip title='Instrumentation WebSocket Status'>
                                 <Chip 
                                     size='small' 
                                     color={ConnectionDotColors.INTERRUPTED}
@@ -87,6 +88,6 @@ const ControlsPanelDock: React.FC = () => {
             </Stack>
         </Paper>
     )
-}
+})
 
 export default ControlsPanelDock;

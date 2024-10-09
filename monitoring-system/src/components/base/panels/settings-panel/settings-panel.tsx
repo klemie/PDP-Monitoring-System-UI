@@ -1,0 +1,244 @@
+import { Button, Container, IconButton, Paper, Stack, Switch, Typography } from "@mui/material"
+import { useContext, useState } from "react";
+import { JsonData, JsonEditor, ThemeInput } from 'json-edit-react'
+import { DEFAULT_CONTROLS_CONFIG, DEFAULT_INSTRUMENTATION_CONFIG, InstrumentationSensorType } from "../../../../lib/configs/configs";
+import { observer } from "mobx-react-lite";
+import { SettingStoreContext } from "../../../../stores/SettingStore";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { InstrumentationReadingType } from "../../../instrumentation/instrumentation-module/Instrumentation-module-types";
+
+
+
+export const SettingPanel = observer(() => {
+
+    const settingStore = useContext(SettingStoreContext);
+
+
+    return (
+        <Container>
+            <Paper
+                sx={{
+                    flexGrow: 1,
+                    height: '100%', 
+                    width: '100%',
+                    display: 'flex',
+                    maxHeight: '80vh',
+                    overflow: 'scroll',
+                }}
+            >
+                <Stack 
+                    direction={'column'}
+                    spacing={2}
+                    sx={{
+                        width: '100%',
+                        padding: 2,
+                    }}
+                >
+                    {settingStore.settingsPanel === 'main' && <SettingsMainContent />}
+                    {settingStore.settingsPanel === 'instrumentation' && <InstrumentationSettings />}
+                    {settingStore.settingsPanel === 'controls' && <ControlsSettings  />}
+                </Stack>
+            </Paper>
+        </Container>
+    )
+})
+
+
+const SettingsMainContent = observer(() => {
+    const store = useContext(SettingStoreContext);
+    return (
+        <>
+            <Stack
+                spacing={1}
+            >
+                <Stack
+                    justifyContent={'space-between'}
+                    direction={'row'}
+                >
+                    <Typography variant='h6'>Instrumentation</Typography>
+                    <Button 
+                        size="small"
+                        variant="contained"
+                        sx={{
+                            backgroundColor: 'black',
+                            color: 'white'
+                        }}
+                        onClick={() => store.updateView('DASHBOARD')}
+                        startIcon={<ChevronLeft />}
+                    >
+                        back
+                    </Button>
+                </Stack>
+                <SettingsOption 
+                    option={'Instrumentation Configuration'}
+                    onClick={() => {
+                        console.log('clicked')
+                        store.updateSettingsPanel('instrumentation')
+                        console.log(store.settingsPanel)
+                    }}
+                />
+                <SettingsOption 
+                    option={'Instrumentation Visualization'}
+                    toggle
+                    toggleInitValue={store.uiConfiguration.instrumentation.graphs}
+                    updateToggleValue={(value: boolean) => store.uiConfiguration.instrumentation.graphs = value}
+                />
+            </Stack>
+            <Stack
+                spacing={1}
+            >
+                <Typography variant='h6'>Controls</Typography>
+                <SettingsOption 
+                    onClick={() => {
+                        console.log('clicked')
+                        store.updateSettingsPanel('controls')
+                        console.log(store.settingsPanel)
+                    }}
+                    option={'Controls Configuration'}
+                />
+                <SettingsOption
+                    option={'Controls Dock'}
+                    toggle
+                    toggleInitValue={store.uiConfiguration.controls.dock}
+                    updateToggleValue={(value: boolean) => store.uiConfiguration.controls.dock = value}
+                />
+                <SettingsOption
+                    option={'Controls Panel'}
+                    toggle
+                    toggleInitValue={store.uiConfiguration.controls.panel}
+                    updateToggleValue={(value: boolean) => store.uiConfiguration.controls.panel = value}
+                />
+            </Stack>
+            <Stack
+                spacing={1}
+            >
+                <Typography variant='h6'>Feed System</Typography>
+                <Typography variant='subtitle2'>Coming soon</Typography>
+            </Stack>
+        </>
+    )
+})
+
+const JsonEditorDefaultProps = {
+    rootFontSize: 12,
+    theme: 'githubDark' as ThemeInput,
+    collapse: 0,
+    rootName: 'InstrumentationConfig',
+    collapseAnimationTime: 100
+}
+
+const InstrumentationSettings = observer(() => {
+    const store = useContext(SettingStoreContext);
+    return (
+        <Stack
+            direction={'column'}
+            spacing={1}
+            sx={{
+                alignContent: 'center',
+                justifyContent: 'center'
+            }}
+            width={'100%'}
+        >
+            <Typography variant='subtitle1'>Instrumentation Configuration</Typography>
+            <JsonEditor
+                data={store.instrumentationConfig}
+                setData={(data: JsonData) => store.updateInstrumentationConfig(data as InstrumentationSensorType[])}
+                {...JsonEditorDefaultProps}
+                defaultValue={{
+                    label:"Default Label",
+                    key:"{TYPE}_{LABEL}",
+                    type:"{TYPE}",
+                    display:true,
+                    visualizationType:"graph",
+                    size:9
+                }}
+            />
+            <Button 
+                size="small"
+                variant="contained"
+                sx={{
+                    backgroundColor: 'black',
+                    color: 'white'
+                }}
+                onClick={() => store.updateSettingsPanel('main')}
+                startIcon={<ChevronLeft />}
+            >
+                back
+            </Button>
+        </Stack>
+    )
+})
+
+const ControlsSettings = observer(() => {
+    const store = useContext(SettingStoreContext);
+    return (
+        <Stack
+            spacing={1}
+        >
+            <Typography variant='h6'>Controls Configuration</Typography>
+            <JsonEditor
+                 data={store.controlsList}
+                 setData={(data: JsonData) => store.updateControlsList(data as string[])}
+                 {...JsonEditorDefaultProps}
+            />
+            <Button 
+                    size="small"
+                    variant="contained"
+                    sx={{
+                        backgroundColor: 'black',
+                        color: 'white'
+                    }}
+                    onClick={() => store.updateSettingsPanel('main')}
+                    startIcon={<ChevronLeft />}
+                >
+                    back
+                </Button>
+        </Stack>
+    )
+})
+
+
+interface SettingsOptionProps {
+    option: string;
+    toggle?: boolean;
+    onClick: () => void;
+    toggleInitValue?: boolean;
+    updateToggleValue?: (value: boolean) => void;
+}
+
+const SettingsOption = observer((props: SettingsOptionProps) => {
+    const { option, toggle, toggleInitValue, updateToggleValue, onClick } = props;
+    
+    const [hoverElevation, setHoverElevation] = useState<number>(0);
+    
+    const [toggleState, setToggleState] = useState<boolean>(toggleInitValue || false);
+    const changeToggleState = () => {
+        if (!updateToggleValue) return;
+        const newToggleState = !toggleState;
+        setToggleState(newToggleState);
+        updateToggleValue(newToggleState);
+    }
+
+    return (
+        <Paper
+            sx={{
+                padding: 1.5,
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'black'
+            }}
+            elevation={hoverElevation}
+            onClick={() => !toggle && onClick()}
+            onMouseEnter={() => setHoverElevation(1)}
+            onMouseLeave={() => setHoverElevation(0)}
+        >
+            <Typography variant='subtitle2'>{option}</Typography>
+            { toggle 
+                ? <Switch size="small" checked={toggleState} onChange={changeToggleState} /> 
+                : <IconButton size="small"><ChevronRight /></IconButton> 
+            }
+        </Paper>
+    )
+})

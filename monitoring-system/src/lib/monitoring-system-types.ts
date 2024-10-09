@@ -39,7 +39,7 @@ enum ControlsCommandTypes {
 }
 
 export interface IControlsPacket extends IBasePacket {
-    valve?: ControlsValveTypes;
+    valve?: ControlsValveTypes | string;
     action?: ControlsActionTypes;
     command: ControlsCommandTypes;
 }

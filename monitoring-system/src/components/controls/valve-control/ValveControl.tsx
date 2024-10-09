@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ControlsActionTypes, ControlsCommandTypes, ControlsValveTypes, IControlsPacket, PacketType } from '../../../lib/monitoring-system-types';
 import { Chip, FormControlLabel, Stack, Switch, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 interface IValveControlProps {
-    valveName: ControlsValveTypes;
+    valveName: string;
     disabled?: boolean;
     onFlip?: () => void;
 }
@@ -15,13 +15,19 @@ const ValveControl = (props: IValveControlProps) => {
     const theme = useTheme();
     const isNotMobile = useMediaQuery(theme.breakpoints.up('sm'));
     const [isSwitchChecked, setIsSwitchChecked] = useState<boolean>(false);
+    const [name, setName] = useState<string>(valveName);
+
+    useEffect(() => {
+        setName(valveName);
+    }, [valveName]);
+
 
     const sendCommand = (event: React.ChangeEvent<HTMLInputElement>) => {
         // default closed
         const payload: IControlsPacket = {
             identifier: PacketType.CONTROLS,
             command: ControlsCommandTypes.CONTROL,
-            valve: valveName,
+            valve: name,
             action: ControlsActionTypes.CLOSE
         };
         setIsSwitchChecked(event.target.checked);
@@ -58,7 +64,7 @@ const ValveControl = (props: IValveControlProps) => {
 
     return (
         <>
-            {!isNotMobile ? <ValveControl.PhoneView valveName={valveName} /> : <ValveControl.ComputerView valveName={valveName} />}
+            {!isNotMobile ? <ValveControl.PhoneView valveName={name} /> : <ValveControl.ComputerView valveName={name} />}
         </>
     );
 } 
