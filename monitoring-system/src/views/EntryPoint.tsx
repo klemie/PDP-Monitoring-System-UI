@@ -1,4 +1,4 @@
-import { AppBar, Button, IconButton, Menu, MenuItem, Select } from '@mui/material';
+import { AppBar, Button, IconButton, Stack } from '@mui/material';
 import { PageContainer, PageContainerToolbar } from '@toolpad/core';
 import { Chat, Download, Settings } from '@mui/icons-material';
 import ControlsPanelDock from '../components/base/panels/controls-panel/ControlsPanelDock';
@@ -6,9 +6,8 @@ import { useContext } from 'react';
 import { InstrumentationPanel } from '../components/base/panels/instrumentation-panel/InstrumentataionPanel';
 import { SettingPanel } from '../components/base/panels/settings-panel/settings-panel';
 import { SettingStoreContext } from '../stores/SettingStore';
-import { useDemoRouter } from '@toolpad/core/internals';
-import { SegmentKeys } from '../stores/BaseStore';
 import { observer } from 'mobx-react-lite';
+import ControlsPanel from '../components/base/panels/controls-panel/ControlsPanel';
 
 
 
@@ -28,7 +27,10 @@ export const EntryPoint = observer(() => {
         >
             <SettingStoreContext.Provider value={SettingStore}>
                 {SettingStore.currentView === 'SETTINGS' && <SettingPanel />}
-                { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.instrumentation.graphs && <InstrumentationPanel /> }
+                <Stack direction={'column'}>
+                    { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.instrumentation.graphs && <InstrumentationPanel /> }
+                    { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.controls.panel && <ControlsPanel /> }
+                </Stack>
                 { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.controls.dock && <AppBar 
                     position="fixed"
                     color="primary" 
