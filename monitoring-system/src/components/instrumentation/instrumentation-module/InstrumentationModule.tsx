@@ -1,8 +1,10 @@
 import { Box, IconButton, ListItemIcon, Menu, MenuItem, Paper, Stack, Typography } from "@mui/material";
 import { instrumentationModuleConfigMap, InstrumentationType } from "./Instrumentation-module-types";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Brush } from 'recharts';
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Check, MoreVert } from "@mui/icons-material";
+import { observer } from "mobx-react-lite";
+import { InstrumentationStoreContext } from "../../../stores/websocket/InstrumentationWebSocketStore";
 
 type InstrumentationModuleProps = {
     title: string;
@@ -175,25 +177,29 @@ InstrumentationModule.ConfigurationMenu = (props: ConfigurationMenuProps) => {
     )
 }
 
-InstrumentationModule.Graph = () => {
+InstrumentationModule.Graph = observer(() => {
+    const instrumenationStoreContext = useContext(InstrumentationStoreContext)
+    const [packetCount, setPacketCount] = useState(0)
+    const [data, setData] = useState<{ 
+        packetNumber: number,
+        reading: number
+    }[]>([])
+    useEffect(() => {
+        instrumenationStoreContext.onMessage()
+        setPacketCount((p) => p += 1)
+        setData((prevData) => [...prevData, {
+            packetNumber: packetCount,
+            reading: instrumenationStoreContext.data
+        }])
+    }, [instrumenationStoreContext.data])
+
     return (
         <ResponsiveContainer 
             width='100%' 
             height={200}
         >
             <LineChart
-                data={[{
-                    packetNumber: 0,
-                    reading: 0
-                },
-                {
-                    packetNumber: 1,
-                    reading: 1
-                },
-                {
-                    packetNumber: 2,
-                    reading: 2
-                }]}
+                data={data}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
                 <Line 
@@ -215,7 +221,7 @@ InstrumentationModule.Graph = () => {
             </LineChart>
         </ResponsiveContainer>
     )
-}
+})
 
 InstrumentationModule.Value = (
     props: { type: InstrumentationType }

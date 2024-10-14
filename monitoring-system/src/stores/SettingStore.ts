@@ -83,5 +83,5 @@ class SettingStore implements ISettingStore {
     }
 }
 
-export const settingStore = new SettingStore();
+const settingStore = new SettingStore();
 export const SettingStoreContext = createContext(settingStore);
