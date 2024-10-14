@@ -1,4 +1,4 @@
-import { AppBar, Button, IconButton } from '@mui/material';
+import { AppBar, Button, IconButton, Stack } from '@mui/material';
 import { PageContainer, PageContainerToolbar } from '@toolpad/core';
 import { Chat, Download, Settings } from '@mui/icons-material';
 import ControlsPanelDock from '../components/base/panels/controls-panel/ControlsPanelDock';
@@ -8,6 +8,7 @@ import { SettingPanel } from '../components/base/panels/settings-panel/settings-
 import { SettingStoreContext } from '../stores/SettingStore';
 import { observer } from 'mobx-react-lite';
 import { controlsWSStore, ControlWSStoreContext } from '../stores/websocket/ControlsWebSocketStore';
+import ControlsPanel from '../components/base/panels/controls-panel/ControlsPanel';
 
 
 
