@@ -4,7 +4,7 @@ interface ILocalStorageCache<T> {
     remove(): void;
 }
 
-class LocalStorageCache<T> implements LocalStorageCache<T> {
+class LocalStorageCache<T> implements ILocalStorageCache<T> {
     private key: string;
     private serialize: (data: T) => string;
     private deserialize: (data: string) => T;

@@ -1,19 +1,15 @@
 import { Button, Container, IconButton, Paper, Stack, Switch, Typography } from "@mui/material"
 import { useContext, useState } from "react";
 import { JsonData, JsonEditor, ThemeInput } from 'json-edit-react'
-import { DEFAULT_CONTROLS_CONFIG, DEFAULT_INSTRUMENTATION_CONFIG, InstrumentationSensorType } from "../../../../lib/configs/configs";
+import { InstrumentationSensorType } from "../../../../lib/configs/configs";
 import { observer } from "mobx-react-lite";
-import { SettingStoreContext } from "../../../../stores/SettingStore";
+import SettingStore from "../../../../stores/SettingStore";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { InstrumentationReadingType } from "../../../instrumentation/instrumentation-module/Instrumentation-module-types";
 
 
 
 export const SettingPanel = observer(() => {
-
-    const settingStore = useContext(SettingStoreContext);
-
-
     return (
         <Container>
             <Paper
@@ -34,9 +30,9 @@ export const SettingPanel = observer(() => {
                         padding: 2,
                     }}
                 >
-                    {settingStore.settingsPanel === 'main' && <SettingsMainContent />}
-                    {settingStore.settingsPanel === 'instrumentation' && <InstrumentationSettings />}
-                    {settingStore.settingsPanel === 'controls' && <ControlsSettings  />}
+                    {SettingStore.settingsPanel === 'main' && <SettingsMainContent />}
+                    {SettingStore.settingsPanel === 'instrumentation' && <InstrumentationSettings />}
+                    {SettingStore.settingsPanel === 'controls' && <ControlsSettings  />}
                 </Stack>
             </Paper>
         </Container>
@@ -45,7 +41,6 @@ export const SettingPanel = observer(() => {
 
 
 const SettingsMainContent = observer(() => {
-    const store = useContext(SettingStoreContext);
     return (
         <>
             <Stack
@@ -63,7 +58,7 @@ const SettingsMainContent = observer(() => {
                             backgroundColor: 'black',
                             color: 'white'
                         }}
-                        onClick={() => store.updateView('DASHBOARD')}
+                        onClick={() => SettingStore.updateView('DASHBOARD')}
                         startIcon={<ChevronLeft />}
                     >
                         back
@@ -73,15 +68,15 @@ const SettingsMainContent = observer(() => {
                     option={'Instrumentation Configuration'}
                     onClick={() => {
                         console.log('clicked')
-                        store.updateSettingsPanel('instrumentation')
-                        console.log(store.settingsPanel)
+                        SettingStore.updateSettingsPanel('instrumentation')
+                        console.log(SettingStore.settingsPanel)
                     }}
                 />
                 <SettingsOption 
                     option={'Instrumentation Visualization'}
                     toggle
-                    toggleInitValue={store.uiConfiguration.instrumentation.graphs}
-                    updateToggleValue={(value: boolean) => store.uiConfiguration.instrumentation.graphs = value}
+                    toggleInitValue={SettingStore.uiConfiguration.instrumentation.graphs}
+                    updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.instrumentation.graphs = value}
                 />
             </Stack>
             <Stack
@@ -91,22 +86,22 @@ const SettingsMainContent = observer(() => {
                 <SettingsOption 
                     onClick={() => {
                         console.log('clicked')
-                        store.updateSettingsPanel('controls')
-                        console.log(store.settingsPanel)
+                        SettingStore.updateSettingsPanel('controls')
+                        console.log(SettingStore.settingsPanel)
                     }}
                     option={'Controls Configuration'}
                 />
                 <SettingsOption
                     option={'Controls Dock'}
                     toggle
-                    toggleInitValue={store.uiConfiguration.controls.dock}
-                    updateToggleValue={(value: boolean) => store.uiConfiguration.controls.dock = value}
+                    toggleInitValue={SettingStore.uiConfiguration.controls.dock}
+                    updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.controls.dock = value}
                 />
                 <SettingsOption
                     option={'Controls Panel'}
                     toggle
-                    toggleInitValue={store.uiConfiguration.controls.panel}
-                    updateToggleValue={(value: boolean) => store.uiConfiguration.controls.panel = value}
+                    toggleInitValue={SettingStore.uiConfiguration.controls.panel}
+                    updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.controls.panel = value}
                 />
             </Stack>
             <Stack
@@ -128,7 +123,6 @@ const JsonEditorDefaultProps = {
 }
 
 const InstrumentationSettings = observer(() => {
-    const store = useContext(SettingStoreContext);
     return (
         <Stack
             direction={'column'}
@@ -141,8 +135,8 @@ const InstrumentationSettings = observer(() => {
         >
             <Typography variant='subtitle1'>Instrumentation Configuration</Typography>
             <JsonEditor
-                data={store.instrumentationConfig}
-                setData={(data: JsonData) => store.updateInstrumentationConfig(data as InstrumentationSensorType[])}
+                data={SettingStore.instrumentationConfig}
+                setData={(data: JsonData) => SettingStore.updateInstrumentationConfig(data as InstrumentationSensorType[])}
                 {...JsonEditorDefaultProps}
                 defaultValue={{
                     label:"Default Label",
@@ -160,7 +154,7 @@ const InstrumentationSettings = observer(() => {
                     backgroundColor: 'black',
                     color: 'white'
                 }}
-                onClick={() => store.updateSettingsPanel('main')}
+                onClick={() => SettingStore.updateSettingsPanel('main')}
                 startIcon={<ChevronLeft />}
             >
                 back
@@ -170,15 +164,14 @@ const InstrumentationSettings = observer(() => {
 })
 
 const ControlsSettings = observer(() => {
-    const store = useContext(SettingStoreContext);
     return (
         <Stack
             spacing={1}
         >
             <Typography variant='h6'>Controls Configuration</Typography>
             <JsonEditor
-                 data={store.controlsList}
-                 setData={(data: JsonData) => store.updateControlsList(data as string[])}
+                 data={SettingStore.controlsList}
+                 setData={(data: JsonData) => SettingStore.updateControlsList(data as string[])}
                  {...JsonEditorDefaultProps}
             />
             <Button 
@@ -188,7 +181,7 @@ const ControlsSettings = observer(() => {
                         backgroundColor: 'black',
                         color: 'white'
                     }}
-                    onClick={() => store.updateSettingsPanel('main')}
+                    onClick={() => SettingStore.updateSettingsPanel('main')}
                     startIcon={<ChevronLeft />}
                 >
                     back
@@ -201,7 +194,7 @@ const ControlsSettings = observer(() => {
 interface SettingsOptionProps {
     option: string;
     toggle?: boolean;
-    onClick: () => void;
+    onClick?: () => void;
     toggleInitValue?: boolean;
     updateToggleValue?: (value: boolean) => void;
 }

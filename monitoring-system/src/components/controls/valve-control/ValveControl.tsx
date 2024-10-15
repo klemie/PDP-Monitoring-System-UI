@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ControlsActionTypes, ControlsCommandTypes, IControlsPacket, PacketType } from '../../../lib/monitoring-system-types';
 import { Chip, FormControlLabel, Stack, Switch, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { ControlWSStoreContext } from '../../../stores/websocket/ControlsWebSocketStore';
 
 interface IValveControlProps {
     valveName: string;
@@ -19,7 +18,6 @@ const ValveControl = observer((props: IValveControlProps) => {
     const isNotMobile = useMediaQuery(theme.breakpoints.up('sm'));
     const [isSwitchChecked, setIsSwitchChecked] = useState<boolean>(false);
     const [name, setName] = useState<string>(valveName);
-    const controlsStore = useContext(ControlWSStoreContext)
 
     useEffect(() => {
         setName(valveName);
@@ -49,7 +47,7 @@ const ValveControl = observer((props: IValveControlProps) => {
         // checked = !checked;
     
         onFlip && onFlip();
-        controlsStore.sendCommand(payload);
+        ControlsStore.sendCommand(payload);
     }
 
     useEffect(() => {

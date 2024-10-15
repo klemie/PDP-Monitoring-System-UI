@@ -5,16 +5,13 @@ import ControlsPanelDock from '../components/base/panels/controls-panel/Controls
 import { useContext } from 'react';
 import { InstrumentationPanel } from '../components/base/panels/instrumentation-panel/InstrumentataionPanel';
 import { SettingPanel } from '../components/base/panels/settings-panel/settings-panel';
-import { SettingStoreContext } from '../stores/SettingStore';
 import { observer } from 'mobx-react-lite';
-import { controlsWSStore, ControlWSStoreContext } from '../stores/websocket/ControlsWebSocketStore';
-import ControlsPanel from '../components/base/panels/controls-panel/ControlsPanel';
+import SettingStore from '../stores/SettingStore';
 
 
 
 export const EntryPoint = observer(() => {
-    const SettingStore = useContext(SettingStoreContext);
-    const ControlsStore = useContext(ControlWSStoreContext);
+    
 
     return (
         <PageContainer 
@@ -27,30 +24,25 @@ export const EntryPoint = observer(() => {
                 paddingX: 10
             }}
         >
-            <SettingStoreContext.Provider value={SettingStore}>
-                { SettingStore.currentView === 'SETTINGS' && <SettingPanel /> }
-                { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.instrumentation.graphs && <InstrumentationPanel /> }
-                { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.controls.dock && <AppBar 
-                    position="fixed"
-                    color="primary" 
-                    sx={{ 
-                        top: 'auto', 
-                        bottom: 0,
-                    }}
-                >
-                    <ControlWSStoreContext.Provider value={ControlsStore}>
-                        <ControlsPanelDock />
-                    </ControlWSStoreContext.Provider>
-                </AppBar> }
+            { SettingStore.currentView === 'SETTINGS' && <SettingPanel /> }
+            { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.instrumentation.graphs && <InstrumentationPanel /> }
+            { SettingStore.currentView === 'DASHBOARD' && SettingStore.uiConfiguration.controls.dock && <AppBar 
+                position="fixed"
+                color="primary" 
+                sx={{ 
+                    top: 'auto', 
+                    bottom: 0,
+                }}
+            >
+                <ControlsPanelDock />
+            </AppBar> }
                 
-            </SettingStoreContext.Provider>
         </PageContainer>
     )
 });
 
 const EntryPointToolBar = observer(() => {
 
-    const SettingStore = useContext(SettingStoreContext);
     return (
         <PageContainerToolbar>
             <Button startIcon={<Download />} color='inherit' disabled>

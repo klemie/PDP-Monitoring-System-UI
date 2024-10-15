@@ -6,7 +6,7 @@ import LocalStorageCache from "../../lib/cashe";
 const WSS_PORT = 8888
 const WSS_URL = `ws://192.168.0.1:${WSS_PORT}`
 
-interface IIntrumentationStore {
+interface IInstrumentationStore {
     logCache: LocalStorageCache<string[]>;
     isConnected: boolean;
     connect(): void;
@@ -14,7 +14,7 @@ interface IIntrumentationStore {
     clearLog(): void;
 }
 
-class InstrumentationWebSocketStore implements IIntrumentationStore {
+class InstrumentationWebSocketStore implements IInstrumentationStore {
     logCache: LocalStorageCache<string[]> = new LocalStorageCache<string[]>('ControlsLogCache');
     isConnected: boolean;
     private ws: any;
@@ -63,4 +63,5 @@ class InstrumentationWebSocketStore implements IIntrumentationStore {
 }
 
 const instrumentationWSStore = new InstrumentationWebSocketStore()
-export const InstrumentationStoreContext = createContext(instrumentationWSStore)
+
+export default instrumentationWSStore

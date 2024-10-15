@@ -1,10 +1,10 @@
 import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, Tooltip } from '@mui/material';
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 import ValveControl from '../../../controls/valve-control/ValveControl';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Observer, observer } from 'mobx-react-lite';
-import { SettingStoreContext } from '../../../../stores/SettingStore';
-import { ControlWSStoreContext } from '../../../../stores/websocket/ControlsWebSocketStore';
+import ControlsStore from '../../../../stores/websocket/ControlsWebSocketStore';
+import settingStore from '../../../../stores/SettingStore';
 
 const ControlsPanelDock: React.FC = observer(() => {
     enum ConnectionDotColors {
@@ -13,20 +13,6 @@ const ControlsPanelDock: React.FC = observer(() => {
         DISCONNECTED = 'default'
     }
 
-    const settingStore = useContext(SettingStoreContext);
-    const controlsStore = useContext(ControlWSStoreContext);
-    // const InstrumentationStore = useContext(Instr)
-
-    useEffect(() => {
-        console.log('use Effect')
-        console.log(controlsStore.isConnected)
-    }, [controlsStore.isConnected])
-    // const [controlsLoading, setControlsLoading] = useState(false);
-
-    useEffect(() => {
-        console.log('Controls Panel')
-        console.log(controlsStore.incomingPacket)
-    }, [controlsStore.newPacket])
 
     return (
         <Observer>{() =>
@@ -46,10 +32,10 @@ const ControlsPanelDock: React.FC = observer(() => {
                 >
                     {settingStore.controlsList.map((control, index) => (
                         <ValveControl
-                            disabled={!controlsStore.isConnected}
+                            disabled={!ControlsStore.isConnected}
                             key={index}
                             valveName={control}
-                            incomingPacket={controlsStore.incomingPacket}
+                            incomingPacket={ControlsStore.incomingPacket}
                         />
                     ))}
                 </Stack>
@@ -71,20 +57,20 @@ const ControlsPanelDock: React.FC = observer(() => {
                             // loading={controlsStore.isConnected}
                             loadingPosition='start'
                             onClick={() => {
-                                console.log(`isConnected state ${controlsStore.isConnected}`)
-                                if (controlsStore.isConnected) {
+                                console.log(`isConnected state ${ControlsStore.isConnected}`)
+                                if (ControlsStore.isConnected) {
                                     console.log('disconnect UI')
-                                    controlsStore.disconnect()
+                                    ControlsStore.disconnect()
                                 } else {
                                     console.log('connect UI')
-                                    controlsStore.connect()
+                                    ControlsStore.connect()
                                 }
                             }}
                             startIcon={
                                 <Tooltip title='Controls WebSocket Status'>
                                     <Chip 
                                         size='small' 
-                                        color={controlsStore.isConnected ? ConnectionDotColors.CONNECTED : ConnectionDotColors.DISCONNECTED} 
+                                        color={ControlsStore.isConnected ? ConnectionDotColors.CONNECTED : ConnectionDotColors.DISCONNECTED} 
                                         sx={{ borderRadius: '50%', width: 25 }}
                                     />
                                 </Tooltip>

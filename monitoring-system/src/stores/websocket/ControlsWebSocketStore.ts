@@ -1,7 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import LocalStorageCache from "../../lib/cashe";
 import { DEFAULT_CONTROLS_CONFIG, CONTROL_VALVES_SAFE_STATES } from "../../lib/configs/configs";
-import { createContext } from "react";
 import { IControlsPacket } from "../../lib/monitoring-system-types";
 
 const VALVE_NAME_KEYS = DEFAULT_CONTROLS_CONFIG
@@ -14,7 +13,6 @@ interface IControlsStore {
   valveStates: Map<string, string>;
   logCache: LocalStorageCache<string[]>;
   isConnected: boolean;
-  newPacket: boolean;
   incomingPacket: IControlsPacket | object;
   connect(): void;
   sendCommand(payload: IControlsPacket): void;
@@ -22,7 +20,7 @@ interface IControlsStore {
 }
 
 export class ControlsWebSocketStore implements IControlsStore {
-  // auto generate default valve states based on the config.ts
+  private ws: any;
   valveStates = new Map<string, string>(
     VALVE_NAME_KEYS.map((key, index) => {
       return [key, VALVE_DEFAULT_STATES[index].state];
@@ -30,14 +28,11 @@ export class ControlsWebSocketStore implements IControlsStore {
   );
   logCache: LocalStorageCache<string[]> = new LocalStorageCache<string[]>('ControlsLogCache');
   isConnected: boolean;
-  private ws: any;
   incomingPacket: object;
-  newPacket: boolean;
   
   constructor() {
     makeAutoObservable(this);
     this.isConnected = false;
-    this.newPacket = false
     this.incomingPacket = {} as IControlsPacket; 
   }
 
@@ -86,7 +81,6 @@ export class ControlsWebSocketStore implements IControlsStore {
         // console.log(this.valveStates.get(valve))
         break;
     }
-    this.newPacket = true
   }
 
   sendCommand(payload: IControlsPacket) {
@@ -95,7 +89,7 @@ export class ControlsWebSocketStore implements IControlsStore {
   }
 
   private log() {
-    // log the command
+    // log a command
   }
 
   clearLog() {
@@ -103,5 +97,6 @@ export class ControlsWebSocketStore implements IControlsStore {
   }
 }
 
-export const controlsWSStore = new ControlsWebSocketStore()
-export const ControlWSStoreContext = createContext(controlsWSStore)
+const controlsWSStore = new ControlsWebSocketStore()
+
+export default controlsWSStore

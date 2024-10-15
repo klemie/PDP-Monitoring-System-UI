@@ -1,12 +1,9 @@
 import { Grid2, Stack } from "@mui/material"
 import { InstrumentationModule } from "../../../instrumentation/instrumentation-module/InstrumentationModule"
-import { DEFAULT_INSTRUMENTATION_CONFIG } from "../../../../lib/configs/configs"
 import { observer } from "mobx-react-lite"
-import { SettingStoreContext } from "../../../../stores/SettingStore"
-import { useContext } from "react"
+import SettingsStore from "../../../../stores/SettingStore"
 
 export const InstrumentationPanel = observer(() => {
-    const store = useContext(SettingStoreContext);
     return (
         <Grid2 
             container 
@@ -21,7 +18,7 @@ export const InstrumentationPanel = observer(() => {
             <Grid2 size={{ xs: 9 }}>
                 <Stack spacing={2}>
                     {
-                        store.instrumentationConfig.map((instrument, index) => {
+                        SettingsStore.instrumentationConfig.map((instrument, index) => {
                             if (instrument.display && instrument.size === 9) {
                                 return <InstrumentationModule 
                                     key={index}
@@ -37,7 +34,7 @@ export const InstrumentationPanel = observer(() => {
             <Grid2 size={{ xs: 3 }} gap={1}>
                 <Stack spacing={2}>
                     {
-                        store.instrumentationConfig.map((instrument, index) => {
+                        SettingsStore.instrumentationConfig.map((instrument, index) => {
                             if (instrument.display && instrument.size === 3) {
                                 return <InstrumentationModule 
                                     key={index}

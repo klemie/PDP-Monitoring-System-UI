@@ -4,7 +4,6 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Brush } fr
 import { useContext, useEffect, useState } from "react";
 import { Check, MoreVert } from "@mui/icons-material";
 import { observer } from "mobx-react-lite";
-import { InstrumentationStoreContext } from "../../../stores/websocket/InstrumentationWebSocketStore";
 
 type InstrumentationModuleProps = {
     title: string;
@@ -178,20 +177,18 @@ InstrumentationModule.ConfigurationMenu = (props: ConfigurationMenuProps) => {
 }
 
 InstrumentationModule.Graph = observer(() => {
-    const instrumenationStoreContext = useContext(InstrumentationStoreContext)
     const [packetCount, setPacketCount] = useState(0)
     const [data, setData] = useState<{ 
         packetNumber: number,
         reading: number
     }[]>([])
-    useEffect(() => {
-        instrumenationStoreContext.onMessage()
-        setPacketCount((p) => p += 1)
-        setData((prevData) => [...prevData, {
-            packetNumber: packetCount,
-            reading: instrumenationStoreContext.data
-        }])
-    }, [instrumenationStoreContext.data])
+    // useEffect(() => {
+    //     setPacketCount((p) => p += 1)
+    //     setData((prevData) => [...prevData, {
+    //         packetNumber: packetCount,
+    //         reading: instrumenationStoreContext.data
+    //     }])
+    // }, [instrumenationStoreContext.data])
 
     return (
         <ResponsiveContainer 
