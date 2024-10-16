@@ -1,9 +1,14 @@
 import { Box, IconButton, ListItemIcon, Menu, MenuItem, Paper, Stack, Typography } from "@mui/material";
 import { instrumentationModuleConfigMap, InstrumentationType } from "./Instrumentation-module-types";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Brush } from 'recharts';
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Check, MoreVert } from "@mui/icons-material";
 import { observer } from "mobx-react-lite";
+import { WebglPlot, WebglLine, ColorRGBA } from "webgl-plot";
+import instrumentationWSStore from "../../../stores/websocket/InstrumentationWebSocketStore";
+
+
+let webglp: WebglPlot;
+let line: WebglLine;
 
 type InstrumentationModuleProps = {
     title: string;
@@ -176,48 +181,114 @@ InstrumentationModule.ConfigurationMenu = (props: ConfigurationMenuProps) => {
     )
 }
 
+// InstrumentationModule.Graph = observer(() => {
+//     const [packetCount, setPacketCount] = useState(0)
+//     const [data, setData] = useState<{ 
+//         packetNumber: number,
+//         reading: number
+//     }[]>([])
+//     // useEffect(() => {
+//     //     setPacketCount((p) => p += 1)
+//     //     setData((prevData) => [...prevData, {
+//     //         packetNumber: packetCount,
+//     //         reading: instrumentationWSStore.data
+//     //     }])
+//     // }, [instrumentationWSStore.data])
+
+//     return (
+//         <ResponsiveContainer 
+//             width='100%' 
+//             height={200}
+//         >
+//             <LineChart
+//                 data={data}
+//                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+//             >
+//                 <Line 
+//                     type="monotone" 
+//                     dataKey="reading" 
+//                     stroke={"#515356"}
+//                     strokeWidth={3} 
+//                     activeDot={{r: 5}}
+//                     isAnimationActive={false}
+//                 />
+//                 <XAxis dataKey={'packetNumber'} />
+//                 <YAxis />
+//                 <Brush 
+//                     height={15}
+//                     fill='#22272E'
+//                     stroke='#22272E'
+//                 />
+//                 <Tooltip />
+//             </LineChart>
+//         </ResponsiveContainer>
+//     )
+// })
+
 InstrumentationModule.Graph = observer(() => {
     const [packetCount, setPacketCount] = useState(0)
     const [data, setData] = useState<{ 
         packetNumber: number,
         reading: number
     }[]>([])
-    // useEffect(() => {
-    //     setPacketCount((p) => p += 1)
-    //     setData((prevData) => [...prevData, {
-    //         packetNumber: packetCount,
-    //         reading: instrumenationStoreContext.data
-    //     }])
-    // }, [instrumenationStoreContext.data])
+
+    const canvasMain = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        if (canvasMain.current) {
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        canvasMain.current.width =
+            canvasMain.current.clientWidth * devicePixelRatio;
+        canvasMain.current.height =
+            canvasMain.current.clientHeight * devicePixelRatio;
+
+        webglp = new WebglPlot(canvasMain.current);
+        const numX = 1000;
+
+        line = new WebglLine(new ColorRGBA(1, 0, 0, 1), numX);
+        webglp.addLine(line);
+
+        line.arrangeX();
+        }
+    }, []);
+
+    useEffect(() => {
+        let id = 0;
+        let renderPlot = () => {
+        
+        const freq = 0.001;
+        const noise = 0.1;
+        const amp = 0.5;
+
+        const noise1 = noise || 0.1;
+        // for (let i = 0; i < line.numPoints; i++) {
+        //     line.setY(i,  instrumentationWSStore.data);
+        // }
+        for (let i = 0; i < line.numPoints; i++) {
+            const yNoise = Math.random() * 100;
+            line.setY(i, yNoise * noise1);
+        }
+        id = requestAnimationFrame(renderPlot);
+        webglp.update();
+        };
+        id = requestAnimationFrame(renderPlot);
+
+        return () => {
+        renderPlot = () => {};
+        cancelAnimationFrame(id);
+        };
+    }, []);
+
+    const canvasStyle = {
+        width: "100%",
+        height: "70vh"
+    };
 
     return (
-        <ResponsiveContainer 
-            width='100%' 
-            height={200}
-        >
-            <LineChart
-                data={data}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
-                <Line 
-                    type="monotone" 
-                    dataKey="reading" 
-                    stroke={"#515356"}
-                    strokeWidth={3} 
-                    activeDot={{r: 5}}
-                    isAnimationActive={false}
-                />
-                <XAxis dataKey={'packetNumber'} />
-                <YAxis />
-                <Brush 
-                    height={15}
-                    fill='#22272E'
-                    stroke='#22272E'
-                />
-                <Tooltip />
-            </LineChart>
-        </ResponsiveContainer>
-    )
+        <div>
+        <canvas style={canvasStyle} ref={canvasMain}/>
+        </div>
+    );
 })
 
 InstrumentationModule.Value = (
