@@ -1,4 +1,4 @@
-import ReactFlow, { MarkerType, useEdgesState, useNodesState } from "reactflow";
+import ReactFlow, { addEdge, MarkerType, useEdgesState, useNodesState } from "reactflow";
 import Add from '@mui/icons-material/Add';
 import InfoIcon from '@mui/icons-material/Info';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -6,22 +6,28 @@ import HelpIcon from '@mui/icons-material/Help';
 import SaveIcon from '@mui/icons-material/Save';
 import RestoreIcon from '@mui/icons-material/Restore';
 import { FeedSystemStoreContext } from "../../stores/feed-system/FeedSystemStore";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { Box, Container, Paper, useTheme } from "@mui/material";
 import TankNode from "./nodes/tank-node/TankNode";
 import InstrumentationNode from "./nodes/instrumentation-node/InstrumentationNode";
 import PAndIDValveNode from "./nodes/valve-node/ValveNode"
+import { NodeDefaults, PAndIDNodeTypes } from "./nodes/types";
+import { ValveTypeKeys } from "./nodes/valve-node/ValveTypes";
 
 export const FeedSystem: React.FC = () => {
 	const theme = useTheme();
 
     const feedSystemStore = useContext(FeedSystemStoreContext);
-    const snapGrid = [5, 5]
+    const snapGrid = [5, 5] as [number, number];
 	// useHotkeys("ctrl+s", () => onSave());
 	// useHotkeys("ctrl+z", () => onRestore());
 
-	const [nodes, setNodes, onNodesChange] = useNodesState([]);
+	const [nodes, setNodes, onNodesChange] = useNodesState([
+    ]);
 	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+    const onConnect = useCallback((params: any) => setEdges((eds) => addEdge({ ...params, style: { stroke: '#fff' } }, eds)), []);
+
 	const [rfInstance, setRfInstance] = useState(null);
 
     const nodeTypes = {
@@ -83,10 +89,7 @@ export const FeedSystem: React.FC = () => {
     
     return (
         <Box 
-            component="main"
-            display="flex"
-            height="100%"
-            width="100%"
+        sx={{ display: 'flex', height: '100%', width: '100%' }}
         >
             <Box
 				component="main"
@@ -120,7 +123,7 @@ export const FeedSystem: React.FC = () => {
                         nodeTypes={nodeTypes}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
-                        // onConnect={onConnect}
+                        onConnect={onConnect}
                         snapToGrid={true}
                         snapGrid={snapGrid}
                         fitView

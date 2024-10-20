@@ -1,6 +1,15 @@
 import { InstrumentationType } from "../../components/instrumentation/instrumentation-module/Instrumentation-module-types";
 import { ControlsValveTypes } from "../monitoring-system-types";
 
+export type AutomationProfilesType = {
+    label: string;
+    key: string;
+    automation: boolean;
+    controls: ControlsValveTypes[];
+    instrumentation: InstrumentationSensorType[];
+    description: string;
+}
+
 export type InstrumentationSensorType = {
     label: string;
     key: string;

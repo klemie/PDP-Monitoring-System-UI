@@ -1,6 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { CONTROL_VALVES_SAFE_STATES, ControlValveType, DEFAULT_CONTROLS_CONFIG, DEFAULT_INSTRUMENTATION_CONFIG, InstrumentationSensorType } from "../lib/configs/configs";
-import { createContext } from "react";
+import { AutomationProfilesType, CONTROL_VALVES_SAFE_STATES, ControlValveType, DEFAULT_CONTROLS_CONFIG, DEFAULT_INSTRUMENTATION_CONFIG, InstrumentationSensorType } from "../lib/configs/configs";
 
 interface ISettingStore {
     instrumentationConfig: InstrumentationSensorType[];
@@ -15,23 +14,39 @@ interface ISettingStore {
         },
         instrumentation: {
             graphs: boolean;
+        },
+        feedSystem: {
+            show: boolean;
+            drawers: {
+                helpDrawer: boolean;
+                legendDrawer: boolean;
+                nodeBuilderDrawer: boolean;
+            }
         }
     }
 }
 
 class SettingStore implements ISettingStore {
-
     settingsPanel = 'main';
     controlsList: string[] = DEFAULT_CONTROLS_CONFIG;
     controlsConfig: ControlValveType[] = [];
     instrumentationConfig: InstrumentationSensorType[] = [];
+    automationProfiles: AutomationProfilesType[] = [];
     uiConfiguration = {
         controls: {
             panel: false,
             dock: true
         },
         instrumentation: {
-            graphs: true
+            graphs: false
+        },
+        feedSystem: {
+            show: true,
+            drawers: {
+                helpDrawer: false,
+                legendDrawer: false,
+                nodeBuilderDrawer: false
+            }
         }
     }
     currentView = 'DASHBOARD';
@@ -46,7 +61,7 @@ class SettingStore implements ISettingStore {
         this.currentView = view;
     }
 
-    updateSettingsPanel(panel: 'instrumentation' | 'controls' | 'main') {
+    updateSettingsPanel(panel: 'instrumentation' | 'controls' | 'main' | 'automation') {
         this.settingsPanel = panel;
     }
 
@@ -60,6 +75,10 @@ class SettingStore implements ISettingStore {
 
     updateInstrumentationConfig(config: InstrumentationSensorType[] | []) {
         this.instrumentationConfig = config;
+    }
+
+    updateAutomationProfiles(profiles: AutomationProfilesType[]) {
+        this.automationProfiles = profiles;
     }
 
     setDefaultInstrumentationConfig() {

@@ -4,7 +4,7 @@ import {
   Position
 } from 'reactflow';
 
-import { TankTypesSVGs, TankTypeKeys, TankTypeStrings } from '../../../static/tanks/TankTypes';
+import { TankTypesSVGs } from './TankTypes';
 import { Stack, Typography } from '@mui/material';
 
 const PAndIDTankNode = ({ data, isConnectable }) => {

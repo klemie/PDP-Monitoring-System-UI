@@ -7,17 +7,15 @@ import ControlsStore from '../../../stores/websocket/ControlsWebSocketStore';
 interface IValveControlProps {
     valveName: string;
     disabled?: boolean;
-    onFlip?: () => void;
     feedbackAction?: string;
     feedbackValve?: string;
 }
 
 const ValveControl = observer((props: IValveControlProps) => {
-    const { valveName, disabled, onFlip, feedbackAction, feedbackValve } = props;
-    const [feedBackColor, setFeedBackColor] = useState<any>("default");
+    const { valveName, disabled, feedbackAction, feedbackValve } = props;
+    const [feedBackColor, setFeedBackColor] = useState<string>("default");
     const [feedBackLabel, setFeedBackLabel] = useState<string>("CLOSED");
     const theme = useTheme();
-    const isNotMobile = useMediaQuery(theme.breakpoints.up('sm'));
     const [isSwitchChecked, setIsSwitchChecked] = useState<boolean>(false);
     const [name, setName] = useState<string>(valveName);
 

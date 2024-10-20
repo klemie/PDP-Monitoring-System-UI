@@ -1,7 +1,7 @@
 import { Button, Container, IconButton, Paper, Stack, Switch, Typography } from "@mui/material"
 import { useContext, useState } from "react";
 import { JsonData, JsonEditor, ThemeInput } from 'json-edit-react'
-import { InstrumentationSensorType } from "../../../../lib/configs/configs";
+import { AutomationProfilesType, InstrumentationSensorType } from "../../../../lib/configs/configs";
 import { observer } from "mobx-react-lite";
 import SettingStore from "../../../../stores/SettingStore";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
@@ -33,6 +33,7 @@ export const SettingPanel = observer(() => {
                     {SettingStore.settingsPanel === 'main' && <SettingsMainContent />}
                     {SettingStore.settingsPanel === 'instrumentation' && <InstrumentationSettings />}
                     {SettingStore.settingsPanel === 'controls' && <ControlsSettings  />}
+                    {SettingStore.settingsPanel === 'automation' && <AutomationSettings />}
                 </Stack>
             </Paper>
         </Container>
@@ -45,16 +46,15 @@ const SettingsMainContent = observer(() => {
         <>
             <Stack
                 spacing={1}
+                width={'100%'}
             >
-                <Stack
-                    justifyContent={'space-between'}
-                    direction={'row'}
-                >
-                    <Typography variant='h6'>Instrumentation</Typography>
-                    <Button 
+                <Stack justifyContent={'space-between'} direction={'row'} width={'100%'}>
+                    <Typography variant='h4'>Settings</Typography>
+                    <Button
                         size="small"
                         variant="contained"
                         sx={{
+                            width: 'fit-content',
                             backgroundColor: 'black',
                             color: 'white'
                         }}
@@ -64,20 +64,32 @@ const SettingsMainContent = observer(() => {
                         back
                     </Button>
                 </Stack>
-                <SettingsOption 
-                    option={'Instrumentation Configuration'}
-                    onClick={() => {
-                        console.log('clicked')
-                        SettingStore.updateSettingsPanel('instrumentation')
-                        console.log(SettingStore.settingsPanel)
-                    }}
-                />
-                <SettingsOption 
-                    option={'Instrumentation Visualization'}
-                    toggle
-                    toggleInitValue={SettingStore.uiConfiguration.instrumentation.graphs}
-                    updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.instrumentation.graphs = value}
-                />
+                <Stack spacing={1} width={'100%'}>
+                    <Typography variant='h6'>Automation</Typography>
+                    <SettingsOption 
+                        option={'Automation Profiles'}
+                        onClick={() => {
+                            console.log('clicked')
+                            SettingStore.updateSettingsPanel('automation')
+                        }}
+                    />
+                </Stack>
+                <Stack spacing={1} width={'100%'}>
+                    <Typography variant='h6'>Instrumentation</Typography>
+                    <SettingsOption 
+                        option={'Instrumentation Configuration'}
+                        onClick={() => {
+                            console.log('clicked')
+                            SettingStore.updateSettingsPanel('instrumentation')
+                        }}
+                    />
+                    <SettingsOption 
+                        option={'Instrumentation Visualization'}
+                        toggle
+                        toggleInitValue={SettingStore.uiConfiguration.instrumentation.graphs}
+                        updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.instrumentation.graphs = value}
+                    />
+                </Stack>
             </Stack>
             <Stack
                 spacing={1}
@@ -87,7 +99,6 @@ const SettingsMainContent = observer(() => {
                     onClick={() => {
                         console.log('clicked')
                         SettingStore.updateSettingsPanel('controls')
-                        console.log(SettingStore.settingsPanel)
                     }}
                     option={'Controls Configuration'}
                 />
@@ -108,7 +119,12 @@ const SettingsMainContent = observer(() => {
                 spacing={1}
             >
                 <Typography variant='h6'>Feed System</Typography>
-                <Typography variant='subtitle2'>Coming soon</Typography>
+                <SettingsOption
+                    option={'Feed System Panel'}
+                    toggle
+                    toggleInitValue={SettingStore.uiConfiguration.feedSystem.show}
+                    updateToggleValue={(value: boolean) => SettingStore.uiConfiguration.feedSystem.show = value}
+                />
             </Stack>
         </>
     )
@@ -118,7 +134,7 @@ const JsonEditorDefaultProps = {
     rootFontSize: 12,
     theme: 'githubDark' as ThemeInput,
     collapse: 0,
-    rootName: 'InstrumentationConfig',
+    rootName: 'Config',
     collapseAnimationTime: 100
 }
 
@@ -190,6 +206,33 @@ const ControlsSettings = observer(() => {
     )
 })
 
+const AutomationSettings = observer(() => {
+    return (
+        <Stack
+            spacing={1}
+        >
+            <Typography variant='h6'>Automation Profiles</Typography>
+            <JsonEditor
+                 data={SettingStore.automationProfiles}
+                 setData={(data: JsonData) => SettingStore.updateAutomationProfiles(data as AutomationProfilesType[])}
+                 {...JsonEditorDefaultProps}
+            />
+            <Button 
+                    size="small"
+                    variant="contained"
+                    sx={{
+                        backgroundColor: 'black',
+                        color: 'white'
+                    }}
+                    onClick={() => SettingStore.updateSettingsPanel('main')}
+                    startIcon={<ChevronLeft />}
+                >
+                    back
+                </Button>
+        </Stack>
+    )
+})
+
 
 interface SettingsOptionProps {
     option: string;
@@ -223,7 +266,7 @@ const SettingsOption = observer((props: SettingsOptionProps) => {
                 backgroundColor: 'black'
             }}
             elevation={hoverElevation}
-            onClick={() => !toggle && onClick()}
+            onClick={() => !toggle && onClick && onClick()}
             onMouseEnter={() => setHoverElevation(1)}
             onMouseLeave={() => setHoverElevation(0)}
         >
