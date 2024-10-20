@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { ControlsActionTypes, ControlsCommandTypes, IControlsPacket, PacketType } from '../../../lib/monitoring-system-types';
 import { Chip, FormControlLabel, Stack, Switch, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { observer } from 'mobx-react-lite';
+import { Observer, observer } from 'mobx-react-lite';
+import ControlsStore from '../../../stores/websocket/ControlsWebSocketStore'; 
 
 interface IValveControlProps {
     valveName: string;
     disabled?: boolean;
     onFlip?: () => void;
-    incomingPacket: object;
+    feedbackAction?: string;
+    feedbackValve?: string;
 }
 
 const ValveControl = observer((props: IValveControlProps) => {
-    const { valveName, disabled, onFlip, incomingPacket } = props;
+    const { valveName, disabled, onFlip, feedbackAction, feedbackValve } = props;
     const [feedBackColor, setFeedBackColor] = useState<any>("default");
     const [feedBackLabel, setFeedBackLabel] = useState<string>("CLOSED");
     const theme = useTheme();
@@ -24,8 +26,18 @@ const ValveControl = observer((props: IValveControlProps) => {
     }, [valveName]);
 
     useEffect(() => {
-        console.log(incomingPacket)
-    }, [incomingPacket])
+        if (feedbackValve !== valveName) return;
+        if (feedbackAction == "OPEN") {
+            setFeedBackColor("success");
+            setFeedBackLabel("OPEN");
+        } else if (feedbackAction == "TRANSIT") {
+            setFeedBackColor("primary");
+            setFeedBackLabel("IN TRANSIT");
+        } else if (feedbackAction == "CLOSE") {
+            setFeedBackColor("default");
+            setFeedBackLabel("CLOSED");
+        }
+    }, [feedbackAction, feedbackValve, valveName])
 
     const sendCommand = (event: React.ChangeEvent<HTMLInputElement>) => {
         // default closed
@@ -36,71 +48,49 @@ const ValveControl = observer((props: IValveControlProps) => {
             action: ControlsActionTypes.CLOSE
         };
 
+        setIsSwitchChecked(event.target.checked);
+        if (event.target.checked) {
+            payload.action = ControlsActionTypes.OPEN;
+        } 
+        
         console.log('send controls packet')
         console.log(payload)
 
-        setIsSwitchChecked(event.target.checked);
-        // console.log(`switch ${valveName}: ${event.target.checked}`);
-        if (event.target.checked) {
-            payload.action = ControlsActionTypes.OPEN;
-        }
-        // checked = !checked;
-    
-        onFlip && onFlip();
         ControlsStore.sendCommand(payload);
     }
 
-    useEffect(() => {
-        // Feedback logic
-        console.log(incomingPacket)
-        if (incomingPacket['valve'] == valveName) {
-            const action: string = incomingPacket['action'];
-            setFeedBackLabel(action);
-            if (action == "OPEN") {
-                setFeedBackColor("success");
-                if (!isSwitchChecked) {
-                    setIsSwitchChecked(true);
-                }
-            } else if (action == "TRANSIT") {
-                setFeedBackColor("primary");
-            } else if (action == "CLOSE") {
-                setFeedBackColor("default");
-                if (isSwitchChecked) {
-                    setIsSwitchChecked(false);
-                }
-            }
-        }
-
-    }, [incomingPacket]);
-
-
-    const ComputerView = (props: { valveName: string }) => {
+    const ComputerView = observer((props: { valveName: string }) => {
         const { valveName } = props;
         return (
-            <Stack direction="column" spacing={0} alignItems={'center'} minWidth={140} marginY={0.5}>
-                <FormControlLabel 
-                    sx={{ width: "fit-content" }} 
-                    control={<Switch 
-                        onChange={sendCommand}
-                        disabled={disabled}
-                    />} 
-                    label={<Typography variant='button'>{valveName}</Typography>} 
-                    labelPlacement='end' 
-                />
-                <Chip 
-                    color="default"
-                    size="small" 
-                    label="CLOSED" 
-                    sx={{ width: "90%", borderRadius: 1 }}
-                />
-            </Stack>
+            <Observer>{() => (
+                <Stack direction="column" spacing={0} alignItems={'center'} minWidth={140} marginY={0.5}>
+                    <FormControlLabel 
+                        sx={{ width: "fit-content" }} 
+                        control={<Switch 
+                            onChange={sendCommand}
+                            disabled={disabled}
+                            checked={isSwitchChecked}
+                        />} 
+                        label={<Typography variant='button'>{valveName}</Typography>} 
+                        labelPlacement='end' 
+                    />
+                    <Chip 
+                        color={feedBackColor}
+                        size="small" 
+                        label={feedBackLabel}
+                        sx={{ width: "90%", borderRadius: 1 }}
+                    />
+                </Stack>
+            )}</Observer>
         );
-    }
+    })
 
     return (
-        <>
-            {!isNotMobile ? <ValveControl.PhoneView valveName={name} /> : <ComputerView valveName={name} />}
-        </>
+        <Observer>
+            {() => (
+                <ComputerView valveName={name} />
+            )}
+        </Observer>
     );
 })
 

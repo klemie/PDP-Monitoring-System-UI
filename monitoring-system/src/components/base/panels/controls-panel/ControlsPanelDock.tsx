@@ -1,5 +1,5 @@
-import { Button, ButtonGroup, Chip, FormControl, Paper, Stack, Tooltip } from '@mui/material';
-import React from 'react';
+import { Alert, Button, ButtonGroup, Chip, FormControl, Paper, Snackbar, Stack, Tooltip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import ValveControl from '../../../controls/valve-control/ValveControl';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Observer, observer } from 'mobx-react-lite';
@@ -13,6 +13,13 @@ const ControlsPanelDock: React.FC = observer(() => {
         DISCONNECTED = 'default'
     }
 
+    const [errorMessageToast, setErrorMessageToast] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (ControlsStore.error) {
+            setErrorMessageToast(true);
+        }
+    }, [ControlsStore.error])
 
     return (
         <Observer>{() =>
@@ -35,7 +42,8 @@ const ControlsPanelDock: React.FC = observer(() => {
                             disabled={!ControlsStore.isConnected}
                             key={index}
                             valveName={control}
-                            incomingPacket={ControlsStore.incomingPacket}
+                            feedbackAction={ControlsStore.feedbackAction}
+                            feedbackValve={ControlsStore.feedbackValve}
                         />
                     ))}
                 </Stack>
@@ -50,35 +58,33 @@ const ControlsPanelDock: React.FC = observer(() => {
                     Abort
                 </Button>
                 <ButtonGroup orientation='horizontal'>
-                    
-                        <LoadingButton 
-                            color='inherit'
-                            variant='contained'
-                            // loading={controlsStore.isConnected}
-                            loadingPosition='start'
-                            onClick={() => {
-                                console.log(`isConnected state ${ControlsStore.isConnected}`)
-                                if (ControlsStore.isConnected) {
-                                    console.log('disconnect UI')
-                                    ControlsStore.disconnect()
-                                } else {
-                                    console.log('connect UI')
-                                    ControlsStore.connect()
-                                }
-                            }}
-                            startIcon={
-                                <Tooltip title='Controls WebSocket Status'>
-                                    <Chip 
-                                        size='small' 
-                                        color={ControlsStore.isConnected ? ConnectionDotColors.CONNECTED : ConnectionDotColors.DISCONNECTED} 
-                                        sx={{ borderRadius: '50%', width: 25 }}
-                                    />
-                                </Tooltip>
+                    <LoadingButton 
+                        color='inherit'
+                        variant='contained'
+                        loading={ControlsStore.loading}
+                        loadingPosition='start'
+                        onClick={() => {
+                            console.log(`isConnected state ${ControlsStore.isConnected}`)
+                            if (ControlsStore.isConnected) {
+                                console.log('disconnect UI')
+                                ControlsStore.disconnect()
+                            } else {
+                                console.log('connect UI')
+                                ControlsStore.connect()
                             }
-                        >
-                            Controls
-                        </LoadingButton>
-                   
+                        }}
+                        startIcon={
+                            <Tooltip title='Controls WebSocket Status'>
+                                <Chip 
+                                    size='small' 
+                                    color={ControlsStore.isConnected ? ConnectionDotColors.CONNECTED : ConnectionDotColors.DISCONNECTED} 
+                                    sx={{ borderRadius: '50%', width: 25 }}
+                                />
+                            </Tooltip>
+                        }
+                    >
+                        Controls
+                    </LoadingButton>
                     <LoadingButton 
                         color='inherit'
                         variant='contained'
@@ -98,6 +104,18 @@ const ControlsPanelDock: React.FC = observer(() => {
                     </LoadingButton>
                 </ButtonGroup>
             </Stack>
+            <Snackbar open={errorMessageToast} autoHideDuration={6000} onClose={
+                () => setErrorMessageToast(false)
+            }>
+                <Alert
+                    onClose={() => setErrorMessageToast(false)}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    {ControlsStore.errorMessage}
+                </Alert>
+            </Snackbar>
         </Paper>
         }</Observer>
     )

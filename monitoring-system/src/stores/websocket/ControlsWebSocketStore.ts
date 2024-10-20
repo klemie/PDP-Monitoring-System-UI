@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { action, makeAutoObservable, makeObservable, observable, onBecomeObserved, onBecomeUnobserved } from "mobx";
 import LocalStorageCache from "../../lib/cashe";
 import { DEFAULT_CONTROLS_CONFIG, CONTROL_VALVES_SAFE_STATES } from "../../lib/configs/configs";
 import { IControlsPacket } from "../../lib/monitoring-system-types";
@@ -7,84 +7,128 @@ const VALVE_NAME_KEYS = DEFAULT_CONTROLS_CONFIG
 const VALVE_DEFAULT_STATES = CONTROL_VALVES_SAFE_STATES
 
 const WSS_PORT = 8080
-const WSS_URL = `ws://192.168.0.1:${WSS_PORT}`
+const WSS_IP_LOCAL = 'ws://localhost'
+const WSS_IP_NETWORK = 'ws://192.168.0.1'
+
+const WSS_URL = `${WSS_IP_LOCAL}:${WSS_PORT}`
 
 interface IControlsStore {
-  valveStates: Map<string, string>;
+  valveStates:object;
   logCache: LocalStorageCache<string[]>;
   isConnected: boolean;
-  incomingPacket: IControlsPacket | object;
+  loading: boolean;
+  error: boolean;
+  errorMessage: string | undefined;
   connect(): void;
   sendCommand(payload: IControlsPacket): void;
   clearLog(): void;
 }
 
 export class ControlsWebSocketStore implements IControlsStore {
-  private ws: any;
-  valveStates = new Map<string, string>(
-    VALVE_NAME_KEYS.map((key, index) => {
-      return [key, VALVE_DEFAULT_STATES[index].state];
-    })
-  );
+  ws: WebSocket | undefined;
+  error: boolean = false;
+  errorMessage: string | undefined;
+  loading: boolean = false;
+  valveStates = VALVE_DEFAULT_STATES;
   logCache: LocalStorageCache<string[]> = new LocalStorageCache<string[]>('ControlsLogCache');
-  isConnected: boolean;
-  incomingPacket: object;
+  isConnected: boolean = false;
+  feedbackValve: string | undefined;
+  feedbackAction: string | undefined = 'CLOSE';
   
   constructor() {
-    makeAutoObservable(this);
-    this.isConnected = false;
-    this.incomingPacket = {} as IControlsPacket; 
+    makeAutoObservable(this)
+    onBecomeObserved(this, 'isConnected', this.connect);
+    onBecomeUnobserved(this, 'isConnected', this.disconnect);
+
+    this.connect = this.connect.bind(this);
+    this.disconnect = this.disconnect.bind(this);
+    this.onClose = this.onClose.bind(this);
+    this.onOpen = this.onOpen.bind(this);
+    this.onError = this.onError.bind(this);
+    this.updateFeedbackValve = this.updateFeedbackValve.bind(this);
+    this.updateFeedbackAction = this.updateFeedbackAction.bind(this);
+    this.onMessage = this.onMessage.bind(this);
   }
 
   disconnect() {
     console.log('close')
-    this.ws.close()
-    this.isConnected = false
+    try {
+      if (this.ws) {
+        this.ws.close();
+      }
+    } finally {
+      this.isConnected = false
+    }
   }
 
   connect() {
     // connect to the websocket
-    this.ws = new WebSocket(WSS_URL)
-
-    this.ws.addEventListener('message', this.onMessage)
-    this.ws.addEventListener('close', this.onClose)
-    this.ws.addEventListener('open', this.onOpen)
-  
-    this.onOpen()
+    this.loading = true;
+    this.error = false;
+    try {
+      this.ws = new WebSocket(WSS_URL)
+    } finally {
+      this.ws?.addEventListener('message', this.onMessage)
+      this.ws?.addEventListener('close', this.onClose)
+      this.ws?.addEventListener('open', this.onOpen)
+      this.ws?.addEventListener('error', this.onError)
+      
+      setTimeout(() => {
+        this.onOpen()
+      }, 2300)
+    }  
   }
 
-  private onClose() {
-    this.ws.close()
+  onClose() {
+    this.loading = true;
+    try {
+      if (this.ws) {
+        this.ws.close();
+      }
+    } finally {
+      this.loading = false;
+      this.isConnected = false
+    }
+  }
+
+  onError(error: Event) {
+    console.log('error', error)
+    this.error = true;
+    this.errorMessage = `Websocket Error: try restarting your server` 
     this.isConnected = false;
   }
 
-  private onOpen() {
+  onOpen() {
+    this.loading = false;
     this.isConnected = true;
   }
+  
+  updateFeedbackValve(valve: string) {
+    this.feedbackValve = valve
+  }
 
-  private onMessage(message: string) {
-    const data = JSON.parse(message.data);
+  updateFeedbackAction(action: string) {
+    this.feedbackAction = action
+  }
+
+  onMessage(message: MessageEvent): void {
+    const data = JSON.parse(message.data as string);
     const identifier = data.identifier;
-    this.incomingPacket = data.data
-    console.log(`Identifier: ${identifier}`)
-    console.log(this.incomingPacket)
+   
     switch (identifier) {
-      case 'STARTUP':
-        // handle startup message
-        // console.log(`start up: ${data}`)
-        break;
       case 'FEEDBACK':
-        const valve = data.data['valve']
-        const action = data.data['action']
-        console.log(`valve: ${valve}, action: ${action}`)
-        // this.valveStates.set(valve, action)
-        // console.log(this.valveStates.get(valve))
+        this.updateFeedbackAction(data.action)
+        this.updateFeedbackValve(data.valve)
         break;
     }
   }
 
   sendCommand(payload: IControlsPacket) {
     // send command to the websocket
+    if (!this.ws) {
+      console.log('no websocket connection')
+      return
+    }
     this.ws.send(JSON.stringify(payload))
   }
 

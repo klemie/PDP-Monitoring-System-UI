@@ -4,7 +4,9 @@ import LocalStorageCache from "../../lib/cashe";
 
 
 const WSS_PORT = 8888
-const WSS_URL = `ws://192.168.0.1:${WSS_PORT}`
+const WSS_IP_LOCAL = 'ws://localhost'
+const WSS_IP_NETWORK = 'ws://192.168.0.1'
+const WSS_URL = `${WSS_IP_LOCAL}:${WSS_PORT}`
 
 interface IInstrumentationStore {
     logCache: LocalStorageCache<string[]>;
